@@ -17,7 +17,6 @@ jobs:
         run: |
           export THEOS=/opt/theos
           sudo git clone --recursive https://github.com/theos/theos.git $THEOS
-          sudo ln -s $THEOS /opt/theos
           echo "THEOS=/opt/theos" >> $GITHUB_ENV
 
       - name: Install iOS SDK
@@ -27,7 +26,9 @@ jobs:
           sudo unzip -q sdks.zip
           sudo mv sdks-master/*.sdk .
           sudo rm -rf sdks.zip sdks-master
-          ls -la
+
+      - name: Install ldid
+        run: brew install ldid
 
       - name: Build Tweak
         run: |
@@ -36,11 +37,18 @@ jobs:
         env:
           THEOS: /opt/theos
 
+      - name: List build output
+        run: |
+          echo "=== .theos/_ contents ==="
+          find .theos/_ -name "*.dylib" 2>/dev/null
+          echo "=== packages ==="
+          ls -la packages/ 2>/dev/null
+
       - name: Upload dylib artifact
         uses: actions/upload-artifact@v4
         with:
           name: YSBrowserProUnlock-dylib
           path: |
             packages/*.deb
-            .theos/_/Users/*/YSBrowserProUnlock.dylib
+            .theos/_/**/*.dylib
           retention-days: 7
