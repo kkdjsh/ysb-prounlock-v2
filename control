@@ -1,0 +1,8 @@
+Package: com.ysbrowser.prounlock
+Name: YSBrowserProUnlock
+Version: 1.0
+Architecture: iphoneos-arm64
+Description: YSBrowser Pro unlock tweak
+Maintainer: reverse-engineer
+Author: reverse-engineer
+Section: Tweaks
