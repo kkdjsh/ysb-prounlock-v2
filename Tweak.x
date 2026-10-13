@@ -1,41 +1,47 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <substrate.h>
 
-// YSBrowser Pro解锁 Tweak
-// 目标类: YSKit.User (OC runtime名: TtC5YSKit4User)
-// Hook核心Pro/VIP判断方法，强制返回已购买/已激活状态
+// 鏈€灏忓寲Pro瑙ｉ攣 - 鍙狧ook鏈€鏍稿績鐨勬柟娉曪紝閬垮厤绛惧悕涓嶅尮閰嶉棯閫€
 
-%hook TtC5YSKit4User
+static BOOL (*orig_isProEnable)(id self, SEL _cmd);
 
-// Pro功能开关 - 强制返回YES
-- (BOOL)isProEnable {
+static BOOL new_isProEnable(id self, SEL _cmd) {
+    NSLog(@"[ProUnlock] isProEnable called, returning YES");
     return YES;
 }
-
-// App是否过期 - 强制返回NO（永不过期）
-- (BOOL)isAppExp {
-    return NO;
-}
-
-// 98元买断标记 - 强制返回YES
-- (BOOL)isBuy98 {
-    return YES;
-}
-
-// 会员状态标记 - 强制返回YES
-- (BOOL)ishs {
-    return YES;
-}
-
-// 是否检查Pro - 返回NO（跳过Pro状态检查）
-- (BOOL)isCheckPro {
-    return NO;
-}
-
-%end
 
 %ctor {
     @autoreleasepool {
-        NSLog(@"[YSBrowser ProUnlock] Tweak loaded successfully");
+        NSLog(@"[ProUnlock] Tweak loaded, hooking...");
+
+        @autoreleasepool {
+            Class userClass = NSClassFromString(@"TtC5YSKit4User");
+            if (userClass) {
+                NSLog(@"[ProUnlock] Found class: %@", NSStringFromClass(userClass));
+
+                Method m = class_getInstanceMethod(userClass, @selector(isProEnable));
+                if (m) {
+                    NSLog(@"[ProUnlock] Found isProEnable method, hooking...");
+                    MSHookMessageEx(objc_getClass("TtC5YSKit4User"), @selector(isProEnable), (IMP)new_isProEnable, (IMP *)&orig_isProEnable);
+                    NSLog(@"[ProUnlock] Hook success!");
+                } else {
+                    NSLog(@"[ProUnlock] WARNING: isProEnable method not found, trying property...");
+                    // Try to list all methods for debug
+                    unsigned int count;
+                    Method *methods = class_copyMethodList(userClass, &count);
+                    for (unsigned int i = 0; i < count; i++) {
+                        SEL sel = method_getName(methods[i]);
+                        NSString *selName = NSStringFromSelector(sel);
+                        if ([selName containsString:@"Pro"] || [selName containsString:@"pro"] || [selName containsString:@"Buy"] || [selName containsString:@"buy"]) {
+                            NSLog(@"[ProUnlock] Found method: %@", selName);
+                        }
+                    }
+                    free(methods);
+                }
+            } else {
+                NSLog(@"[ProUnlock] WARNING: TtC5YSKit4User class not found");
+            }
+        }
     }
 }
