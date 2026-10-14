@@ -1,4 +1,4 @@
-name: Build YSBrowser ProUnlock Tweak
+name: Build YSBrowser ProUnlock dylib
 
 on:
   push:
@@ -13,42 +13,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Theos
+      - name: Build dylib with clang
         run: |
-          export THEOS=/opt/theos
-          sudo git clone --recursive https://github.com/theos/theos.git $THEOS
-          echo "THEOS=/opt/theos" >> $GITHUB_ENV
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          echo "SDK: $SDK"
+          clang -arch arm64 -arch arm64e -dynamiclib \
+            -isysroot "$SDK" \
+            -fobjc-arc \
+            -framework Foundation \
+            -framework UIKit \
+            -o YSBrowserProUnlock.dylib \
+            Tweak.x
+          ldid -S YSBrowserProUnlock.dylib
+          ls -la YSBrowserProUnlock.dylib
+          otool -L YSBrowserProUnlock.dylib
 
-      - name: Install iOS SDK
-        run: |
-          cd /opt/theos/sdks
-          sudo wget -q https://github.com/theos/sdks/archive/refs/heads/master.zip -O sdks.zip
-          sudo unzip -q sdks.zip
-          sudo mv sdks-master/*.sdk .
-          sudo rm -rf sdks.zip sdks-master
-
-      - name: Install ldid
-        run: brew install ldid
-
-      - name: Build Tweak
-        run: |
-          export THEOS=/opt/theos
-          make package FINAL=out
-        env:
-          THEOS: /opt/theos
-
-      - name: List build output
-        run: |
-          echo "=== .theos/_ contents ==="
-          find .theos/_ -name "*.dylib" 2>/dev/null
-          echo "=== packages ==="
-          ls -la packages/ 2>/dev/null
-
-      - name: Upload dylib artifact
+      - name: Upload dylib
         uses: actions/upload-artifact@v4
         with:
           name: YSBrowserProUnlock-dylib
-          path: |
-            packages/*.deb
-            .theos/_/**/*.dylib
+          path: YSBrowserProUnlock.dylib
           retention-days: 7
