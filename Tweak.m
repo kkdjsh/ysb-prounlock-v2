@@ -27,14 +27,14 @@ static BOOL hook_isProEnable(id self, SEL _cmd) {
 
 static void patch_function(void *func, void *new_impl) {
     if (!func || !new_impl) return;
-    mach_vm_address_t page = (mach_vm_address_t)((uintptr_t)func & ~0xFFF);
-    mach_vm_protect(mach_task_self(), page, 0x1000, FALSE, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE);
+    vm_address_t page = (vm_address_t)((uintptr_t)func & ~0xFFF);
+    vm_protect(mach_task_self(), page, 0x1000, FALSE, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE);
     uint32_t *p = (uint32_t *)func;
     p[0] = 0x58000050;
     p[1] = 0xD61F0200;
     uint64_t *addr = (uint64_t *)(p + 2);
     *addr = (uint64_t)new_impl;
-    mach_vm_protect(mach_task_self(), page, 0x1000, FALSE, VM_PROT_READ | VM_PROT_EXECUTE);
+    vm_protect(mach_task_self(), page, 0x1000, FALSE, VM_PROT_READ | VM_PROT_EXECUTE);
 }
 
 __attribute__((constructor))
