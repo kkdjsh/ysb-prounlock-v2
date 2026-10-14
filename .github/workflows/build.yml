@@ -19,21 +19,20 @@ jobs:
       - name: Build dylib with clang
         run: |
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-          echo "SDK: $SDK"
           clang -arch arm64 -dynamiclib \
             -isysroot "$SDK" \
             -fobjc-arc \
             -framework Foundation \
             -framework UIKit \
-            -o YSBrowserProUnlock.dylib \
+            -o libsqlite3.dylib \
             Tweak.m
-          ldid -S YSBrowserProUnlock.dylib
-          ls -la YSBrowserProUnlock.dylib
-          otool -L YSBrowserProUnlock.dylib
+          ldid -S libsqlite3.dylib
+          ls -la libsqlite3.dylib
+          otool -L libsqlite3.dylib
 
       - name: Upload dylib
         uses: actions/upload-artifact@v4
         with:
-          name: YSBrowserProUnlock-dylib
-          path: YSBrowserProUnlock.dylib
+          name: libsqlite3-dylib
+          path: libsqlite3.dylib
           retention-days: 7
