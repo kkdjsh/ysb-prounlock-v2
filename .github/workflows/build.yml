@@ -23,7 +23,7 @@ jobs:
             -framework Foundation \
             -framework UIKit \
             -o YSBrowserProUnlock.dylib \
-            Tweak.mm
+            Tweak.m
           ldid -S YSBrowserProUnlock.dylib
           ls -la YSBrowserProUnlock.dylib
           otool -L YSBrowserProUnlock.dylib
