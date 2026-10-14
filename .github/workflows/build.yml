@@ -13,11 +13,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install ldid
+        run: brew install ldid
+
       - name: Build dylib with clang
         run: |
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
           echo "SDK: $SDK"
-          clang -arch arm64 -arch arm64e -dynamiclib \
+          clang -arch arm64 -dynamiclib \
             -isysroot "$SDK" \
             -fobjc-arc \
             -framework Foundation \
